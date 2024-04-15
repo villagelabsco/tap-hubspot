@@ -11,6 +11,7 @@ from singer_sdk.authenticators import BearerTokenAuthenticator
 from singer_sdk.exceptions import RetriableAPIError
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
+from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 HUBSPOT_OBJECTS = [
@@ -259,3 +260,13 @@ class HubspotStream(RESTStream):
             on_backoff=self.backoff_handler,
         )(func)
         return decorator
+
+    def backoff_max_tries(self) -> int:
+        """Override the default number of max tries
+        """
+        return 10
+    
+    def backoff_wait_generator(self) -> t.Generator[float, None, None]:
+        """Override the default wait generator used by the backoff decorator on request failure.
+        """
+        return backoff.expo(base=2, factor=2, max_value=15)
