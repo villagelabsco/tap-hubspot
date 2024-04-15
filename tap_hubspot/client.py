@@ -124,9 +124,9 @@ class HubspotStream(RESTStream):
             # NOTE: This is an ordered mapping, with earlier mappings taking precedence.
             #       If the SQL-provided type contains the type name on the left, the mapping
             #       will return the respective singer type.
-            "timestamp": th.DateTimeType(),
-            "datetime": th.DateTimeType(),
-            "date": th.DateType(),
+            "timestamp": th.CustomType({"anyOf": [{"type:": "date-time"}, {"type": "string"}, {"type": "null"}]}),
+            "datetime": th.CustomType({"anyOf": [{"type:": "date-time"}, {"type": "string"}, {"type": "null"}]}),
+            "date": th.CustomType({"anyOf": [{"type:": "date-time"}, {"type": "string"}, {"type": "null"}]}), # Dates may be null
             "int": th.IntegerType(),
             "number": th.NumberType(),
             "decimal": th.NumberType(),
