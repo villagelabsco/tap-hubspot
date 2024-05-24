@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "hs_timestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "hs_note_body": {
+      "type": ["null, string"]
+    },
+    "hubspot_owner_id": {
+      "type": ["null", "string"]
+    },
+    "hs_attachment_ids": {
+      "type": ["null", "string"]
+    }
+  }
+}
