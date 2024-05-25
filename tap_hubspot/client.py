@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 import backoff
 import pytz
 import requests
+from typing import Generator
 from singer_sdk import typing as th
 from singer_sdk._singerlib.utils import strptime_to_utc
 from singer_sdk.authenticators import BearerTokenAuthenticator
@@ -266,7 +267,7 @@ class HubspotStream(RESTStream):
         """
         return 10
     
-    def backoff_wait_generator(self) -> t.Generator[float, None, None]:
+    def backoff_wait_generator(self) -> Generator[float, None, None]:
         """Override the default wait generator used by the backoff decorator on request failure.
         """
         return backoff.expo(base=2, factor=2, max_value=15)
