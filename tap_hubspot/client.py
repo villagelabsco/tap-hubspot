@@ -26,6 +26,7 @@ HUBSPOT_OBJECTS = [
     "tasks",
     "emails",
 ]
+MAX_PROPERTIES_LEN = 15000
 
 
 class HubspotStream(RESTStream):
@@ -94,7 +95,17 @@ class HubspotStream(RESTStream):
             key[-1] for key, value in self.metadata.items()
             if value.selected and len(key) > 0
             ]
-        return list(set(self.properties).intersection(selected_properties))
+        wanted_properties = list(set(self.properties).intersection(selected_properties))
+        # Potential issue: some objects may have an incredible number of custom properties (eg. contacts)
+        # If the list is too long, 419 errors may happen because of the way the query URL is built
+        if len(",".join(wanted_properties)) > MAX_PROPERTIES_LEN:
+            # Default select all hubspot fields, and shake off custom fields
+            p = [el for el in wanted_properties if el.startswith("hs_")]
+            other_p = [el for el in wanted_properties if not el.startswith("hs_")]
+            wanted_properties = p + other_p
+            while len(",".join(wanted_properties)) > MAX_PROPERTIES_LEN:
+                wanted_properties.pop()
+        return wanted_properties
 
     def prepare_request_payload(
         self, context: Optional[dict], next_page_token: Optional[Any]
@@ -271,3 +282,21 @@ class HubspotStream(RESTStream):
         """Override the default wait generator used by the backoff decorator on request failure.
         """
         return backoff.expo(base=2, factor=2, max_value=15)
+
+    def post_process(
+        self,
+        row: dict,
+        context: dict | None = None,  # noqa: ARG002
+    ) -> dict | None:
+        # Remove null fields from the records: don't need to 100% match the schema because the
+        # records may be excessively heavy
+        keys_to_remove = [k for k, v in row.items() if v is None]
+        for key in keys_to_remove:
+            row.pop(key)
+        dicts = [k for k, v in row.items() if isinstance(v, Dict)]
+        for key in dicts:
+            keys_to_remove = [k for k, v in row[key].items() if v is None]
+            for subkey in keys_to_remove:
+                row[key].pop(subkey)
+
+        return row
