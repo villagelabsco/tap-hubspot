@@ -2,7 +2,7 @@
 # from black import Report
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
-
+import logging
 import pytz
 import requests
 from tap_hubspot.client import HUBSPOT_OBJECTS, HubspotStream
@@ -54,20 +54,29 @@ class NotesStream(HubspotStream):
     name = "notes"
     path = "/crm/v3/objects/notes"
     primary_keys = ["id"]
+    replication_key = "id"
 
     def get_url_params(
         self, context: Optional[dict], next_page_token: Optional[Any]
     ) -> Dict[str, Any]:
         selected_properties = self.get_selected_properties()
+        mandatory_props = ["hs_timestamp", "hs_note_body", "hubspot_owner_id"]
+        selected_properties = list(set(selected_properties + mandatory_props))
         params = super().get_url_params(context, next_page_token)
         params["properties"] = ",".join(selected_properties)
+        params["associations"] = ",".join(HUBSPOT_OBJECTS)
         return params
-
-    @property
-    def schema(self) -> dict:
-        if self.cached_schema is None:
-            self.cached_schema, self.properties = self.get_custom_schema()
-        return self.cached_schema
+    
+    def parse_response(self, response: requests.Response) -> Iterable[dict]:
+        data = response.json()["results"]
+        for e in data:
+            out = {**e.get("properties", {})}
+            out["id"] = e["id"]
+            for obj in HUBSPOT_OBJECTS:
+                assocs = [ass.get("id") for ass in e.get("associations", {}).get(obj, {}).get("results", [])]
+                if assocs:
+                    out[obj] = assocs
+            yield out
 
 class CallsStream(HubspotStream):
     name = "calls"

@@ -4,18 +4,70 @@
     "id": {
       "type": ["null", "string"]
     },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "hs_timestamp": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "hs_note_body": {
-      "type": ["null, string"]
+      "type": ["null", "string"]
     },
     "hubspot_owner_id": {
       "type": ["null", "string"]
     },
     "hs_attachment_ids": {
       "type": ["null", "string"]
+    },
+    "deals": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "companies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "meetings": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "quotes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "calls": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tasks": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "emails": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
