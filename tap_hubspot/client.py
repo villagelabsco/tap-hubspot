@@ -26,7 +26,7 @@ HUBSPOT_OBJECTS = [
     "tasks",
     "emails",
 ]
-MAX_PROPERTIES_LEN = 1000
+MAX_PROPERTIES_LEN = 15000
 
 
 class HubspotStream(RESTStream):
