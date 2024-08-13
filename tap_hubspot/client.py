@@ -5,10 +5,10 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 import backoff
 import pytz
 import requests
-from typing import Generator
+from typing import Generator, Union
 from singer_sdk import typing as th
 from singer_sdk._singerlib.utils import strptime_to_utc
-from singer_sdk.authenticators import BearerTokenAuthenticator
+from singer_sdk.authenticators import BearerTokenAuthenticator, OAuthAuthenticator
 from singer_sdk.exceptions import RetriableAPIError
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
@@ -28,6 +28,21 @@ HUBSPOT_OBJECTS = [
 ]
 MAX_PROPERTIES_LEN = 15000
 
+class HubSpotOAuthAuthenticator(OAuthAuthenticator):
+    def __init__(self, stream: RESTStream) -> None:
+        super().__init__(
+            auth_endpoint="https://api.hubapi.com/oauth/v1/token",
+            stream=stream,
+        )
+
+    @property
+    def oauth_request_body(self) -> dict:
+        return {
+            "client_id": self.config["client_id"],
+            "client_secret": self.config.get("client_secret"),
+            "refresh_token": self.config.get("refresh_token"),
+            "grant_type": "refresh_token",
+        }
 
 class HubspotStream(RESTStream):
     """Hubspot stream class."""
@@ -48,8 +63,10 @@ class HubspotStream(RESTStream):
         return SCHEMAS_DIR / f"{self.name}.json"
 
     @property
-    def authenticator(self) -> BearerTokenAuthenticator:
+    def authenticator(self) -> Union[BearerTokenAuthenticator, OAuthAuthenticator]:
         """Return a new authenticator object."""
+        if self.config.get("auth_type") == "oauth2":
+            return HubspotOAuthAuthenticator(self)
         return BearerTokenAuthenticator.create_for_stream(
             self,
             token=self.config.get("access_token"),

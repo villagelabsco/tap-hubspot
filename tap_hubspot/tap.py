@@ -102,10 +102,46 @@ class TapHubspot(Tap):
             description="PRIVATE Access Token for Hubspot API",
         ),
         th.Property(
+            "auth_type",
+            th.OneOf(th.Constant("access_token"), th.Constant("oauth2")),
+            required=False,
+            description="PRIVATE Auth type for Hubspot API",
+        ),
+        th.Property(
+            "client_id",
+            th.StringType,
+            required=False,
+            description="PRIVATE Client ID for Hubspot API OAuth",
+        ),
+        th.Property(
+            "client_secret",
+            th.StringType,
+            required=False,
+            description="PRIVATE Client Secret for Hubspot API OAuth",
+        ),
+        th.Property(
+            "expiry_date",
+            th.StringType,
+            required=False,
+            description="PRIVATE Access Token expiry date for Hubspot API OAuth",
+        ),
+        th.Property(
+            "refresh_token",
+            th.StringType,
+            required=False,
+            description="PRIVATE Refresh Token for Hubspot API OAuth",
+        ),
+        th.Property(
             "start_date",
             th.DateTimeType,
             required=True,
             description="The earliest record date to sync",
+        ),
+        th.Property(
+            "token_uri",
+            th.StringType,
+            required=False,
+            description="PRIVATE Token URI for Hubspot API OAuth",
         ),
     ).to_dict()
 
