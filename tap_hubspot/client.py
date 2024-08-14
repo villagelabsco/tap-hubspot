@@ -13,6 +13,8 @@ from singer_sdk.exceptions import RetriableAPIError
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from tap_hubspot.auth import HubSpotOAuthAuthenticator
+
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 HUBSPOT_OBJECTS = [
@@ -28,21 +30,6 @@ HUBSPOT_OBJECTS = [
 ]
 MAX_PROPERTIES_LEN = 15000
 
-class HubSpotOAuthAuthenticator(OAuthAuthenticator):
-    def __init__(self, stream: RESTStream) -> None:
-        super().__init__(
-            auth_endpoint="https://api.hubapi.com/oauth/v1/token",
-            stream=stream,
-        )
-
-    @property
-    def oauth_request_body(self) -> dict:
-        return {
-            "client_id": self.config["client_id"],
-            "client_secret": self.config.get("client_secret"),
-            "refresh_token": self.config.get("refresh_token"),
-            "grant_type": "refresh_token",
-        }
 
 class HubspotStream(RESTStream):
     """Hubspot stream class."""
@@ -65,8 +52,8 @@ class HubspotStream(RESTStream):
     @property
     def authenticator(self) -> Union[BearerTokenAuthenticator, OAuthAuthenticator]:
         """Return a new authenticator object."""
-        if self.config.get("auth_type") == "oauth2":
-            return HubspotOAuthAuthenticator(self)
+        if "refresh_token" in self.config:
+            return HubSpotOAuthAuthenticator(self)
         return BearerTokenAuthenticator.create_for_stream(
             self,
             token=self.config.get("access_token"),

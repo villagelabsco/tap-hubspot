@@ -102,12 +102,6 @@ class TapHubspot(Tap):
             description="PRIVATE Access Token for Hubspot API",
         ),
         th.Property(
-            "auth_type",
-            th.OneOf(th.Constant("access_token"), th.Constant("oauth2")),
-            required=False,
-            description="PRIVATE Auth type for Hubspot API",
-        ),
-        th.Property(
             "client_id",
             th.StringType,
             required=False,
@@ -120,10 +114,10 @@ class TapHubspot(Tap):
             description="PRIVATE Client Secret for Hubspot API OAuth",
         ),
         th.Property(
-            "expiry_date",
-            th.StringType,
+            "expires_in",
+            th.IntegerType,
             required=False,
-            description="PRIVATE Access Token expiry date for Hubspot API OAuth",
+            description="PRIVATE Expiration time for Hubspot API OAuth",
         ),
         th.Property(
             "refresh_token",
