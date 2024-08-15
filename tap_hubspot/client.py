@@ -13,7 +13,7 @@ from singer_sdk.exceptions import RetriableAPIError
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
-from tap_hubspot.auth import HubSpotOAuthAuthenticator
+from tap_hubspot.auth import HubSpotOAuthAuthenticator, is_oauth_credentials
 
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
@@ -52,7 +52,7 @@ class HubspotStream(RESTStream):
     @property
     def authenticator(self) -> Union[BearerTokenAuthenticator, OAuthAuthenticator]:
         """Return a new authenticator object."""
-        if "refresh_token" in self.config:
+        if is_oauth_credentials(self.config):
             return HubSpotOAuthAuthenticator(self)
         return BearerTokenAuthenticator.create_for_stream(
             self,
