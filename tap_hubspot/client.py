@@ -5,14 +5,16 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 import backoff
 import pytz
 import requests
-from typing import Generator
+from typing import Generator, Union
 from singer_sdk import typing as th
 from singer_sdk._singerlib.utils import strptime_to_utc
-from singer_sdk.authenticators import BearerTokenAuthenticator
+from singer_sdk.authenticators import BearerTokenAuthenticator, OAuthAuthenticator
 from singer_sdk.exceptions import RetriableAPIError
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from tap_hubspot.auth import HubSpotOAuthAuthenticator, is_oauth_credentials
+
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 HUBSPOT_OBJECTS = [
@@ -48,8 +50,10 @@ class HubspotStream(RESTStream):
         return SCHEMAS_DIR / f"{self.name}.json"
 
     @property
-    def authenticator(self) -> BearerTokenAuthenticator:
+    def authenticator(self) -> Union[BearerTokenAuthenticator, OAuthAuthenticator]:
         """Return a new authenticator object."""
+        if is_oauth_credentials(self.config):
+            return HubSpotOAuthAuthenticator(self)
         return BearerTokenAuthenticator.create_for_stream(
             self,
             token=self.config.get("access_token"),
