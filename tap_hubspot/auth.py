@@ -1,3 +1,4 @@
+from functools import cached_property
 from singer_sdk.authenticators import OAuthAuthenticator, SingletonMeta
 from singer_sdk.streams import RESTStream
 from typing import Any, Mapping, TypedDict, TypeGuard
@@ -10,7 +11,7 @@ class HubSpotOAuthAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):
             stream=stream,
         )
 
-    @property
+    @cached_property
     def oauth_request_body(self) -> dict:
         env_client_id = os.getenv("TAP_HUBSPOT_CLIENT_ID")
         env_client_secret = os.getenv("TAP_HUBSPOT_CLIENT_SECRET")
