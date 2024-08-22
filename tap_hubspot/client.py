@@ -1,7 +1,7 @@
 """REST client handling, including HubspotStream base class."""
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional
-
+import os
 import backoff
 import pytz
 import requests
@@ -52,7 +52,8 @@ class HubspotStream(RESTStream):
     @property
     def authenticator(self) -> Union[BearerTokenAuthenticator, OAuthAuthenticator]:
         """Return a new authenticator object."""
-        if is_oauth_credentials(self.config):
+        env_refresh_token = os.getenv("TAP_HUBSPOT_REFRESH_TOKEN")
+        if is_oauth_credentials(self.config) or env_refresh_token:
             return HubSpotOAuthAuthenticator(self)
         return BearerTokenAuthenticator.create_for_stream(
             self,
