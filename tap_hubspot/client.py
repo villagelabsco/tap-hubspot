@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 import backoff
 import pytz
 import requests
+from asyncio.log import logger
 from typing import Generator, Union
 from singer_sdk import typing as th
 from singer_sdk._singerlib.utils import strptime_to_utc
@@ -53,8 +54,11 @@ class HubspotStream(RESTStream):
     def authenticator(self) -> Union[BearerTokenAuthenticator, OAuthAuthenticator]:
         """Return a new authenticator object."""
         if is_oauth_credentials(self.config):
+            self.logger.info("Using OAuth authenticator")
             return HubSpotOAuthAuthenticator(self)
+        self.logger.info("Using Bearer Token authenticator")
         return BearerTokenAuthenticator.create_for_stream(
+            
             self,
             token=self.config.get("access_token"),
         )
