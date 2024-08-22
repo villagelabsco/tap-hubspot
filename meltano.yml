@@ -14,6 +14,10 @@ plugins:
     - catalog
     - discover
     settings:
+    - name: client_id
+      kind: string
+    - name: client_secret
+      kind: password
     - name: access_token
       kind: password
     - name: flattening_enabled
@@ -21,6 +25,8 @@ plugins:
     - name: flattening_max_depth
     - name: start_date
       value: '2010-01-01T00:00:00Z'
+    - name: refresh_token
+      kind: password
     config:
       start_date: '2010-01-01T00:00:00Z'
     select:
