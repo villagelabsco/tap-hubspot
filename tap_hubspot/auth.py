@@ -17,10 +17,10 @@ class HubSpotOAuthAuthenticator(OAuthAuthenticator, metaclass=SingletonMeta):
         env_client_secret = os.getenv("TAP_HUBSPOT_CLIENT_SECRET")
         env_refresh_token = os.getenv("TAP_HUBSPOT_REFRESH_TOKEN")
         return {
-            "client_id": self.config["client_id"] or env_client_id,
-            "client_secret": self.config["client_secret"] or env_client_secret,
+            "client_id": self.config.get("client_id") or env_client_id,
+            "client_secret": self.config.get("client_secret") or env_client_secret,
             "grant_type": "refresh_token",
-            "refresh_token": self.config["refresh_token"] or env_refresh_token,
+            "refresh_token": self.config.get("refresh_token") or env_refresh_token,
         }
 
 
