@@ -28,7 +28,59 @@ HUBSPOT_OBJECTS = [
     "tasks",
     "emails",
 ]
-MAX_PROPERTIES_LEN = 15000
+MAX_PROPERTIES_LEN = 14000
+
+PROPERTIES_TERM_BLACKLIST  = [
+    "hs_analytics_",
+    "_shadow",
+    # Note: v1 properties are legacy, and should not be pulled
+    # https://community.hubspot.com/t5/Developer-Announcements/Upcoming-Sunset-of-Legacy-Stage-Calculated-Properties-for/m-p/1026312
+    "hs_date_entered_",
+    "hs_date_exited_",
+    "hs_time_in_",
+    "hs_time_to_",
+    "hs_time_between_",
+    "hs_line_item_",
+    "hs_v2_cumulative_time",
+    "hs_v2_latest_time_in",
+    "hs_email_optout",
+    "hs_content_membership",
+    "hs_calculated_",
+    "hs_searchable_calculated_",
+    "hs_social_",
+    "hs_object_source_details",
+    "hs_predictive",
+    # Just too complex to try synchronizing email metrics
+    "hs_email_",
+    # Other custom fields that were seen with some integrations, and which are not useful
+    "calendly_",
+    "leaddyno_",
+    "intercom",
+    "contrast_",
+    "checkr_",
+    "aircall_",
+    "seamless_",
+    "shopify_",
+    "ecomm_bridge_",
+    "ga_ambassador",
+    "ga_campaign",
+    "ga_payout",
+    "checkr_"
+    "svc_",
+]
+PROPERTIES_BLACKLIST = [
+    "hs_deal_stage_probability",
+    "hs_deal_stage_probability_shadow",
+    "hs_exchange_rate",
+    "hs_deal_amount_calculation_preference",
+    "hs_quarantined_emails",
+    "hs_predictivecontactscore",
+    "hs_predictivecontactscore_v2",
+    "hs_googleplusid",
+    "hs_google_click_id",
+    "hs_user_ids_of_all_notification_followers",
+    "hs_user_ids_of_all_notification_unfollowers",
+]
 
 
 class HubspotStream(RESTStream):
@@ -99,11 +151,22 @@ class HubspotStream(RESTStream):
         return params
     
     def get_selected_properties(self) -> List[dict]:
-        selected_properties = [
-            key[-1] for key, value in self.metadata.items()
-            if value.selected and len(key) > 0
-            ]
-        wanted_properties = list(set(self.properties).intersection(selected_properties))
+        # Bypass the catalog as it's sometimes flaky - just hard-select everything, except for
+        # a few parameters which are known to not be useful
+        # selected_properties = [
+        #     key[-1] for key, value in self.metadata.items()
+        #     if value.selected and len(key) > 0
+        #     ]
+        # wanted_properties = list(set(self.properties).intersection(selected_properties))
+
+        wanted_properties = []
+        for x in self.properties:
+            if x in PROPERTIES_BLACKLIST:
+                continue
+            if any(y in x for y in PROPERTIES_TERM_BLACKLIST):
+                continue
+            wanted_properties.append(x)
+
         # Potential issue: some objects may have an incredible number of custom properties (eg. contacts)
         # If the list is too long, 419 errors may happen because of the way the query URL is built
         if len(",".join(wanted_properties)) > MAX_PROPERTIES_LEN:
@@ -184,6 +247,9 @@ class HubspotStream(RESTStream):
 
         Returns: Parameters to be included in query + schema property list
         """
+        if self.cached_schema:
+            return self.cached_schema, self.params
+        
         internal_properties: List[th.Property] = []
         properties: List[th.Property] = []
 
@@ -231,7 +297,9 @@ class HubspotStream(RESTStream):
         properties.append(
             th.Property("properties", th.ObjectType(*internal_properties))
         )
-        return th.PropertiesList(*properties).to_dict(), params
+        self.cached_schema = th.PropertiesList(*properties).to_dict()
+        self.params = params
+        return self.cached_schema, self.params
 
     def get_properties(self) -> List[dict]:
         response = requests.get(
