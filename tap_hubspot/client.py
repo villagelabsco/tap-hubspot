@@ -67,6 +67,7 @@ PROPERTIES_TERM_BLACKLIST  = [
     "ga_payout",
     "checkr_"
     "svc_",
+    "stripe_"
 ]
 PROPERTIES_BLACKLIST = [
     "hs_deal_stage_probability",
@@ -80,6 +81,13 @@ PROPERTIES_BLACKLIST = [
     "hs_google_click_id",
     "hs_user_ids_of_all_notification_followers",
     "hs_user_ids_of_all_notification_unfollowers",
+    "hs_next_meeting_id",
+    "hs_notes_last_activity",
+    "num_notes",
+    "num_contacted_notes",
+    "num_emails",
+    "num_tasks",
+    "notes_last_updated"
 ]
 
 
