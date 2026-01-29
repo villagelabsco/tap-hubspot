@@ -3,38 +3,39 @@ send_anonymous_usage_stats: false
 project_id: 40eb93e3-36f8-492b-bb71-deec50c35380
 default_environment: test
 environments:
-- name: test
+  - name: test
 plugins:
   extractors:
-  - name: tap-hubspot
-    namespace: tap_hubspot
-    pip_url: -e .
-    capabilities:
-    - state
-    - catalog
-    - discover
-    settings:
-    - name: client_id
-      kind: string
-    - name: client_secret
-      kind: password
-    - name: access_token
-      kind: password
-    - name: flattening_enabled
-      kind: boolean
-    - name: flattening_max_depth
-    - name: start_date
-      value: '2010-01-01T00:00:00Z'
-    - name: refresh_token
-      kind: password
-    config:
-      start_date: '2010-01-01T00:00:00Z'
-    select:
-      - deals.*
-      - quotes.*
-      - line_items.*
-      - owners.*
+    - name: tap-hubspot
+      namespace: tap_hubspot
+      pip_url: -e .
+      capabilities:
+        - state
+        - catalog
+        - discover
+      settings:
+        - name: client_id
+          kind: string
+        - name: client_secret
+          kind: password
+        - name: access_token
+          kind: password
+        - name: flattening_enabled
+          kind: boolean
+        - name: flattening_max_depth
+        - name: start_date
+          value: "2010-01-01T00:00:00Z"
+        - name: refresh_token
+          kind: password
+      config:
+        start_date: "2010-01-01T00:00:00Z"
+      select:
+        - deals.*
+        - quotes.*
+        - line_items.*
+        - owners.*
+        - companies.*
   loaders:
-  - name: target-jsonl
-    variant: andyh1203
-    pip_url: target-jsonl
+    - name: target-jsonl
+      variant: andyh1203
+      pip_url: target-jsonl
